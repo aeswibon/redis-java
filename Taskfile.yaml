@@ -1,0 +1,29 @@
+version: "3"
+silent: true
+tasks:
+  default:
+    desc: List all the tasks
+    cmds:
+      - task --list
+  clean:
+    desc: Removes the build files
+    cmds:
+      - mvn clean
+  compile:
+    desc: Compile the application
+    cmds:
+      - mvn compile
+  package:
+    desc: Package the application
+    cmds:
+      - mvn -B --quiet package
+  exec:
+    desc: Execute the application
+    cmds:
+      - java -jar target/redis.jar
+  start:
+    desc: Start the application
+    cmds:
+      - task: clean
+      - task: package
+      - task: exec

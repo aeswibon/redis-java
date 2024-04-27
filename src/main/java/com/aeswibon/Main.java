@@ -1,34 +1,33 @@
 package com.aeswibon;
 
+import com.aeswibon.client.Constant;
+import com.aeswibon.client.handlers.ClientHandler;
+
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("Logs from your program will appear here!");
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
-        ServerSocket serverSocket = null;
-        Socket clientSocket = null;
-        int port = 6379;
-        try {
-            serverSocket = new ServerSocket(port);
-            serverSocket.setReuseAddress(true);
-            clientSocket = serverSocket.accept();
-            OutputStream out = clientSocket.getOutputStream();
-            out.write("+PONG\r\n".getBytes());
-            out.flush();
+    public static void main(String[] args) {
+        try (ServerSocket server = new ServerSocket(Constant.port)) {
+            server.setReuseAddress(true);
+            System.out.println("Server started on port " + Constant.port);
+            while (true) {
+                try {
+                    Socket client = server.accept();
+                    System.out.println("New client connected: " + client.getInetAddress().getHostAddress());
+                    executor.submit(new ClientHandler(client));
+                } catch (IOException e) {
+                    System.out.println("Error accepting connection: " + e.getMessage());
+                    break;
+                }
+            }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
-        } finally {
-            try {
-                if (clientSocket != null) {
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                System.out.println("IOException: " + e.getMessage());
-            }
         }
     }
 }
